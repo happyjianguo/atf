@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html>
+
+<title>Atomic Transaction Framework(原子交易框架)</title>
+<meta charset="utf-8" />
+
+<head>
+	<link rel="stylesheet" type="text/css" href="css/common.css" />
+	<!-- jQuery -->
+	<script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$("#eval").click(function () {
+				$.ajax({
+					url: "/eval?script=" + $("#script").val(),
+					dataType: "json",
+					success: function (msg) {
+						$("#console").append(JSON.stringify(msg) + " <br />");
+					},
+					error: function (msg) {
+						alert(JSON.stringify(msg));
+					},
+				})
+			});
+
+			$("#clear").click(function () {
+				$("#console").empty();
+			});
+		});
+	</script>
+</head>
+
+<body>
+
+	<header>
+		<h1>Atomic Transaction Framework(原子交易框架)</h1>
+	</header>
+
+	<nav>
+
+	</nav>
+
+	<section>
+		<h3>Groovy script</h3>
+		<textarea id="script" rows="10" cols="100">
+import jie.atf.demo.Demo;
+Demo demo = context.getBean(Demo.class);
+demo.execute(demo.buildScenario1ContainerMetadata(2), demo.createInputData(2));
+		</textarea>
+		<br />
+		<button id="eval">eval</button>
+		<hr />
+		<button id="clear">clear</button>
+		<div id="console" />
+	</section>
+
+	<footer>
+		<p>Jie &copy; 2017. All rights reserved.</p>
+	</footer>
+
+</body>
+
+</html>
