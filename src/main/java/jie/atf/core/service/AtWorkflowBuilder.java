@@ -76,7 +76,6 @@ public class AtWorkflowBuilder {
 			AtTask task = buildTask(taskMetadata.getType());
 			task.setName(taskMetadata.getName());
 			task.setMode(taskMetadata.getMode());
-			task.setStep(taskMetadata.getStep());
 			task.setInputParameters(taskMetadata.getInputParameters());
 			task.setRetryCount(taskMetadata.getRetryCount());
 			task.setRetryDelaySeconds(taskMetadata.getRetryDelaySeconds());

@@ -12,13 +12,12 @@ import java.util.Map;
 public class AtTaskMetadata {
 	private String name; // 任务名(nickname)。UNIQUE
 	private String type; // 全限定类名。反射
-	private AtTaskMode mode; // 执行模式
-	private Long step; // 交易中的第几步
+	private AtTaskMode mode = AtTaskMode.SYNC; // 执行模式
 	private Map<String, String> inputParameters = new HashMap<String, String>(); // 任务的输入参数路径定义
 	// === Retry Logic ===
-	private Long retryCount; // 当任务被标记为FAILED时，尝试重试的次数
-	private Long retryDelaySeconds; // 重试的延时阈值（毫秒）
-	private AtTaskRetryLogic retryLogic; // 重试逻辑
+	private Long retryCount = 3L; // 当任务被标记为FAILED时，尝试重试的次数
+	private Long retryDelaySeconds = 1000L; // 重试的延时阈值（毫秒）
+	private AtTaskRetryLogic retryLogic = AtTaskRetryLogic.FIXED; // 重试逻辑
 	// === Timeout Policy ===
 	private Long timeoutSeconds; // 超时阈值（毫秒）
 	private AtTaskTimeoutPolicy timeoutPolicy; // 超时策略
@@ -58,14 +57,6 @@ public class AtTaskMetadata {
 
 	public void setMode(AtTaskMode mode) {
 		this.mode = mode;
-	}
-
-	public Long getStep() {
-		return step;
-	}
-
-	public void setStep(Long step) {
-		this.step = step;
 	}
 
 	public Map<String, String> getInputParameters() {

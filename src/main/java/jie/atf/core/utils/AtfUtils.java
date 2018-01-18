@@ -1,5 +1,6 @@
 package jie.atf.core.utils;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 import javax.script.Bindings;
@@ -70,5 +71,29 @@ public class AtfUtils {
 		if (reference instanceof String)
 			if (StringUtils.isEmpty((String) reference))
 				throw new AtfException(errorMessage);
+	}
+
+	public static Long parseLong(Object obj) {
+		Long ret = null;
+		if (obj != null && StringUtils.isNotEmpty(obj.toString())) {
+			try {
+				ret = Long.parseLong(obj.toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return ret;
+	}
+
+	public static BigDecimal parseBigDecimal(Object obj) {
+		BigDecimal ret = null;
+		if (obj != null && StringUtils.isNotEmpty(obj.toString())) {
+			try {
+				ret = new BigDecimal(obj.toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return ret;
 	}
 }

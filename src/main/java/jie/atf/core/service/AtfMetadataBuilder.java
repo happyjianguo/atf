@@ -25,7 +25,6 @@ public class AtfMetadataBuilder {
 	private Long version;
 	private List<AtTaskMetadata> taskMetadatas = new ArrayList<AtTaskMetadata>();
 
-	private Long currentStep = 1L; // 添加一个AT任务蓝图则step+1
 	private AtTaskMetadata currentTaskMetadata; // 当前操作的AT任务蓝图
 	// === Container ===
 	private AtTaskMetadata parentTaskMetadata; // 父级AT任务蓝图
@@ -62,7 +61,7 @@ public class AtfMetadataBuilder {
 	 * @return
 	 */
 	public AtfMetadataBuilder withTask(String type) {
-		AtTaskMetadata taskMetadata = createTaskMeta(type);
+		AtTaskMetadata taskMetadata = createTaskMetadata(type);
 		taskMetadatas.add(taskMetadata);
 
 		currentTaskMetadata = taskMetadata;
@@ -158,7 +157,7 @@ public class AtfMetadataBuilder {
 	 * @return
 	 */
 	public AtfMetadataBuilder withContainer(String type) {
-		AtTaskMetadata containerMetadata = createTaskMeta(type);
+		AtTaskMetadata containerMetadata = createTaskMetadata(type);
 		taskMetadatas.add(containerMetadata);
 
 		currentTaskMetadata = containerMetadata;
@@ -176,7 +175,7 @@ public class AtfMetadataBuilder {
 	 */
 	public AtfMetadataBuilder containTask(String type) throws AtfException {
 		AtfUtils.checkNotNull(parentTaskMetadata, "parentTaskMetadata can NOT be null");
-		AtTaskMetadata taskMetadata = createTaskMeta(type);
+		AtTaskMetadata taskMetadata = createTaskMetadata(type);
 		taskMetadata.setParentName(parentTaskMetadata.getName());
 		taskMetadatas.add(taskMetadata);
 
@@ -219,12 +218,10 @@ public class AtfMetadataBuilder {
 	 *            全限定类名。反射
 	 * @return AT任务蓝图
 	 */
-	private AtTaskMetadata createTaskMeta(String type) {
+	private AtTaskMetadata createTaskMetadata(String type) {
 		AtTaskMetadata taskMetadata = new AtTaskMetadata();
 		taskMetadata.setName(StringUtils.substring(type, StringUtils.lastIndexOf(type, ".") + 1, type.length()));
 		taskMetadata.setType(type);
-		taskMetadata.setMode(AtTaskMode.SYNC);
-		taskMetadata.setStep(currentStep++);
 		return taskMetadata;
 	}
 }

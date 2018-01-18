@@ -13,6 +13,7 @@ import jie.atf.core.dto.AtTaskRetryLogic;
 import jie.atf.core.dto.AtTaskState;
 import jie.atf.core.dto.AtTaskStatus;
 import jie.atf.core.dto.AtTaskTimeoutPolicy;
+import jie.atf.core.utils.AtfUtils;
 import jie.atf.core.utils.exception.AtfException;
 
 /**
@@ -30,7 +31,6 @@ public abstract class AtTask {
 	private String name; // 任务名(nickname)。UNIQUE
 	private String type; // 全限定类名。反射
 	private AtTaskMode mode; // 执行模式
-	private Long step; // 交易中的第几步
 	private Map<String, String> inputParameters = new HashMap<String, String>(); // 任务的输入参数路径定义
 	// === Retry Logic ===
 	private Long retryCount; // 当任务被标记为FAILED时，尝试重试的次数
@@ -58,17 +58,57 @@ public abstract class AtTask {
 	private Long agreementRequestId; // 交易ID
 	private Long bankAccountId; // 银行卡ID
 	private BigDecimal transAmount; // 交易金额
+	// === Groovy脚本 ===
+	protected String groovyCondition;
+	protected String groovyBody;
 
+	/**
+	 * 执行AT任务 模板方法
+	 * 
+	 * @throws AtfException
+	 */
 	public void execute() throws AtfException {
 		if (status.equals(AtTaskStatus.COMPLETED))
 			throw new AtfException("can NOT execute task's status: COMPLETED");
+		assign(); // 交易数据和Groovy脚本赋值
 		doExecute();
 	}
 
 	/**
 	 * 抽象方法。委托具体At任务实现
+	 * 
+	 * @throws AtfException
 	 */
-	protected abstract void doExecute();
+	protected abstract void doExecute() throws AtfException;
+
+	/**
+	 * 交易数据和Groovy脚本赋值
+	 */
+	private void assign() {
+		// === 交易数据 ===
+		if (inputParameters.containsKey("agreementRequestId"))
+			agreementRequestId = AtfUtils.parseLong(inputData.get("agreementRequestId"));
+		if (inputParameters.containsKey("bankAccountId"))
+			bankAccountId = AtfUtils.parseLong(inputData.get("bankAccountId"));
+		if (inputParameters.containsKey("transAmount"))
+			transAmount = AtfUtils.parseBigDecimal(inputData.get("transAmount"));
+		// 第i笔交易金额
+		if (inputParameters.containsKey("totalSize")) {
+			Long totalSize = AtfUtils.parseLong(inputData.get("totalSize"));
+			for (long i = 0L; i != totalSize; i++) {
+				String key = "childTransAmount" + i;
+				if (inputParameters.containsKey(key)) {
+					transAmount = AtfUtils.parseBigDecimal(inputData.get(key));
+					break;
+				}
+			}
+		}
+		// === Groovy脚本 ===
+		if (inputParameters.containsKey("groovyCondition"))
+			groovyCondition = (String) inputData.get("groovyCondition");
+		if (inputParameters.containsKey("groovyBody"))
+			groovyBody = (String) inputData.get("groovyBody");
+	}
 
 	public void statusInProgress() {
 		Long now = new Date().getTime();
@@ -173,14 +213,6 @@ public abstract class AtTask {
 
 	public void setMode(AtTaskMode mode) {
 		this.mode = mode;
-	}
-
-	public Long getStep() {
-		return step;
-	}
-
-	public void setStep(Long step) {
-		this.step = step;
 	}
 
 	public Map<String, String> getInputParameters() {
@@ -351,5 +383,21 @@ public abstract class AtTask {
 
 	public void setTransAmount(BigDecimal transAmount) {
 		this.transAmount = transAmount;
+	}
+
+	public String getGroovyCondition() {
+		return groovyCondition;
+	}
+
+	public void setGroovyCondition(String groovyCondition) {
+		this.groovyCondition = groovyCondition;
+	}
+
+	public String getGroovyBody() {
+		return groovyBody;
+	}
+
+	public void setGroovyBody(String groovyBody) {
+		this.groovyBody = groovyBody;
 	}
 }

@@ -11,7 +11,6 @@ import jie.atf.core.api.IAtfMetadataSvs;
 import jie.atf.core.api.IAtfWorkflowSvs;
 import jie.atf.core.domain.AtWorkflow;
 import jie.atf.core.dto.AtTaskMode;
-import jie.atf.core.dto.AtTaskRetryLogic;
 import jie.atf.core.dto.AtWorkflowMetadata;
 import jie.atf.core.service.AtfMetadataBuilder;
 import jie.atf.core.utils.exception.AtfException;
@@ -36,6 +35,7 @@ public class Demo {
 
 	private static final String appid = "appid";
 
+	/** 生成蓝图 */
 	public AtWorkflowMetadata buildScenario1Metadata() throws AtfException {
 		long time = new Date().getTime();
 		AtfMetadataBuilder metadataBuilder = metadataSvs.getMetadataBuilder();
@@ -50,13 +50,13 @@ public class Demo {
 				.taskParam("agreementRequestId", "${workflow.input.agreementRequestId}") // 交易ID
 				.taskParam("bankAccountId", "${workflow.input.bankAccountId}") // 银行卡ID
 				.taskParam("transAmount", "${workflow.input.transAmount}") // 交易金额
-				.taskRetryLogic(3L, 1000L, AtTaskRetryLogic.EXPONENTIAL_BACKOFF) //
 				.build();
 
 		metadataSvs.register(ret);
 		return ret;
 	}
 
+	/** 生成蓝图 */
 	public AtWorkflowMetadata buildScenario1ContainerMetadata(Integer n) throws AtfException {
 		long time = new Date().getTime();
 		AtfMetadataBuilder metadataBuilder = metadataSvs.getMetadataBuilder();
@@ -70,16 +70,14 @@ public class Demo {
 					.taskParam("agreementRequestId", "${workflow.input.agreementRequestId}") // 交易ID
 					.taskParam("bankAccountId", "${workflow.input.bankAccountId}") // 银行卡ID
 					.taskParam("childTransAmount" + i, "${workflow.input.childTransAmount" + i + "}") // 第i笔交易金额
-					.taskParam("totalSize", "${workflow.input.totalSize}") // 总的交易金额笔数
-					.taskRetryLogic(3L, 1000L, AtTaskRetryLogic.EXPONENTIAL_BACKOFF);
+					.taskParam("totalSize", "${workflow.input.totalSize}"); // 总的交易金额笔数
 		}
 		metadataBuilder.endContainer();
 		metadataBuilder.withTask("jie.atf.demo.domain.DemoAtTask301") //
 				.taskName("DemoAtTask301:" + appid + ":" + time) //
 				.taskParam("agreementRequestId", "${workflow.input.agreementRequestId}") // 交易ID
 				.taskParam("bankAccountId", "${workflow.input.bankAccountId}") // 银行卡ID
-				.taskParam("transAmount", "${workflow.input.transAmount}") // 交易金额
-				.taskRetryLogic(3L, 3 * 1000L, AtTaskRetryLogic.FIXED);
+				.taskParam("transAmount", "${workflow.input.transAmount}"); // 交易金额
 		AtWorkflowMetadata ret = metadataBuilder.build();
 
 		metadataSvs.register(ret);
@@ -89,7 +87,9 @@ public class Demo {
 	/** 根据蓝图创建并执行AT工作流 */
 	public AtWorkflow execute(AtWorkflowMetadata workflowMetadata, Map<String, Object> inputData) throws AtfException {
 		workflowSvs.execute(workflowMetadata, inputData);
-		return workflowSvs.find(workflowMetadata.getName() + ":v" + workflowMetadata.getVersion());
+
+		String workflowName = workflowMetadata.getName() + ":v" + workflowMetadata.getVersion();
+		return workflowSvs.find(workflowName);
 	}
 
 	/** 创建inputData */
@@ -114,5 +114,25 @@ public class Demo {
 			transAmount = BigDecimal.valueOf(100.0);
 		ret.put("transAmount", transAmount);
 		return ret;
+	}
+
+	/** 执行Groovy脚本类任务 */
+	public AtWorkflow executeAtTaskScript() throws AtfException {
+		long time = new Date().getTime();
+		AtfMetadataBuilder metadataBuilder = metadataSvs.getMetadataBuilder();
+		AtWorkflowMetadata workflowMetadata = metadataBuilder.workflowName("ScenarioScript:" + appid) //
+				.withTask("jie.atf.demo.domain.DemoAtTaskScript") //
+				.taskName("DemoAtTaskScript:" + appid + ":" + time) //
+				.taskParam("agreementRequestId", "${workflow.input.agreementRequestId}") // 交易ID
+				.taskParam("bankAccountId", "${workflow.input.bankAccountId}") // 银行卡ID
+				.taskParam("transAmount", "${workflow.input.transAmount}") // 交易金额
+				.taskParam("groovyCondition", "${workflow.input.groovyCondition}") // groovyCondition
+				.taskParam("groovyBody", "${workflow.input.groovyBody}") // groovyBody
+				.build();
+		metadataSvs.register(workflowMetadata);
+		Map<String, Object> inputData = createInputData(1);
+		inputData.put("groovyCondition", "return false;");
+		inputData.put("groovyBody", "System.out.println(\"groovyBody eval success\");");
+		return execute(workflowMetadata, inputData);
 	}
 }
