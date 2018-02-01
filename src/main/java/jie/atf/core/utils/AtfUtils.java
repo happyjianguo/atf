@@ -64,13 +64,10 @@ public class AtfUtils {
 	 * @param errorMessage
 	 * @throws AtfException
 	 */
-	public static <T> void checkNotNull(T reference, String errorMessage) throws AtfException {
+	public static <T> T checkNotNull(T reference, String errorMessage) throws AtfException {
 		if (reference == null)
 			throw new AtfException(errorMessage);
-
-		if (reference instanceof String)
-			if (StringUtils.isEmpty((String) reference))
-				throw new AtfException(errorMessage);
+		return reference;
 	}
 
 	public static Long parseLong(Object obj) {

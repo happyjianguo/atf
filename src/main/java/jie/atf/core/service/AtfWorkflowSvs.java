@@ -11,6 +11,7 @@ import jie.atf.core.domain.AtTask;
 import jie.atf.core.domain.AtWorkflow;
 import jie.atf.core.dto.AtTaskMode;
 import jie.atf.core.dto.AtWorkflowMetadata;
+import jie.atf.core.dto.AtWorkflowStatus;
 import jie.atf.core.service.event.IAtfEvent;
 import jie.atf.core.utils.AtfUtils;
 import jie.atf.core.utils.exception.AtfException;
@@ -52,6 +53,9 @@ public class AtfWorkflowSvs implements IAtfWorkflowSvs {
 
 	@Override
 	public void execute(AtWorkflow workflow, Map<String, Object> variables) throws AtfException {
+		AtWorkflowStatus workflowStatus = workflow.getStatus();
+		if (workflowStatus != null && workflowStatus.isTerminal())
+			throw new AtfException("workflow is terminal");
 		workflow.addInputData(variables); // 将流程变量导入inputData
 		doExecute(workflow);
 	}

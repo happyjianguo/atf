@@ -44,8 +44,11 @@
 		<h3>Groovy script</h3>
 		<textarea id="script" rows="10" cols="100">
 import jie.atf.demo.Demo;
+import jie.atf.core.api.IAtfWorkflowSvs;
 Demo demo = context.getBean(Demo.class);
 demo.execute(demo.buildScenario1ContainerMetadata(2), demo.createInputData(2));
+//IAtfWorkflowSvs workflowSvs = context.getBean(IAtfWorkflowSvs.class);
+//workflowSvs.find("Scenario1Container:appid:v1");
 		</textarea>
 		<br />
 		<button id="eval">eval</button>

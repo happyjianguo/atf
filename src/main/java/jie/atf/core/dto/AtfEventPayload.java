@@ -1,15 +1,17 @@
 package jie.atf.core.dto;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * MQ消息载体
+ * MQ消息载体 必须实现Serializable接口
  * 
  * @author Jie
  *
  */
-public class AtfEventPayload {
+public class AtfEventPayload implements Serializable {
 	private String workflowName; // 工作流名
 
 	@Override
